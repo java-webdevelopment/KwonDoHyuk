@@ -1,0 +1,98 @@
+package com.student.DTOImple;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+import com.student.VO.S_VO;
+
+public class DTOImple {
+	String driver ="oracle.jdbc.OracleDriver";
+	String url ="jdbc:oracle:thin:@127.0.0.1:1521:xe";
+	String id = "week7";
+	String pwd = "week7";
+	
+	Connection con=null;
+	PreparedStatement ps = null;
+	ResultSet rs = null;
+	String sql = null;
+	
+	public DTOImple() {
+		try {
+			Class.forName(driver);
+			con = DriverManager.getConnection(url,id,pwd);
+			
+		}catch(Exception e) {e.printStackTrace();}
+		
+	}
+	
+	public List<S_VO> enrollStudent(){
+		List<S_VO> list = new ArrayList<>();
+		System.out.println("몇 명을 등록하시겠습니까?");
+		Scanner scan = new Scanner(System.in);
+		int input = scan.nextInt();
+		scan.nextLine();// 버퍼비우기,큐비우기
+		while(input-->0) {
+			S_VO s_vo = new S_VO();
+			System.out.print("성함을 써주세요 :");
+			s_vo.setName(scan.nextLine());
+			System.out.print("주민번호13자리를 써주세요 :");
+			s_vo.setYear(scan.nextLine());
+			System.out.print("학년을 써주세요 :");
+			s_vo.setGrade(scan.nextInt());
+			System.out.print("잔액을 설정하세요 :");
+			s_vo.setBalance(scan.nextInt());
+			
+			try {
+				
+				sql ="select * from student where year='"+s_vo.getYear()+"'";
+				ps = con.prepareStatement(sql);
+				rs = ps.executeQuery();
+				
+				if(!rs.next())
+				{
+					while(true) {
+						s_vo.setId(idMaker(s_vo.getGrade()));
+						sql = "select * from student where id ='"+s_vo.getId()+"'";
+						if(ps.executeQuery(sql).next())// 컬럼이 있으면 반복문통해 아이디 재설정
+							continue;
+						else//중복아이디 없으므로 탈출
+							break;
+					}
+					sql="insert into student values(?,?,?,?,?)";
+					
+					ps.setString(1, s_vo.getName());
+					ps.setString(2, s_vo.getYear());
+					ps.setString(3, s_vo.getId());
+					ps.setInt(4, s_vo.getGrade());
+					ps.setInt(5, s_vo.getBalance());
+					int result = ps.executeUpdate(sql);
+					if(result==1) {
+						System.out.println("student테이블 저장 성공!");
+					}
+					list.add(s_vo);
+				}
+				else {
+					System.out.println("등록하신 계정이 있습니다. ID찾기를 통해 확인해주세요");
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return list;
+	}
+	public String idMaker(int grade) {
+		String id;
+		id = Integer.toString(grade) +Integer.toString((int)(Math.random()*10000)) ;
+		System.out.println(id);
+		return id;
+	}
+	
+}

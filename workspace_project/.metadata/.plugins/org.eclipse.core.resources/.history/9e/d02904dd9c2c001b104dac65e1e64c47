@@ -1,0 +1,252 @@
+package com.student.DTOImple;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+import com.student.VO.S_VO;
+
+public class DTOImple {
+	String driver ="oracle.jdbc.OracleDriver";
+	String url ="jdbc:oracle:thin:@127.0.0.1:1521:xe";
+	String id = "week7";
+	String pwd = "week7";
+	
+	Connection con=null;
+	PreparedStatement ps = null;
+	ResultSet rs = null;
+	String sql = null;
+	
+	public DTOImple() {
+		try {
+			Class.forName(driver);
+			con = DriverManager.getConnection(url,id,pwd);
+			
+		}catch(Exception e) {e.printStackTrace();}
+		
+	}
+	
+	public List<S_VO> enrollStudent(){
+		List<S_VO> list = new ArrayList<>();
+		System.out.println("몇 명을 등록하시겠습니까?");
+		Scanner scan = new Scanner(System.in);
+		int input = scan.nextInt();
+		while(input-->0) {
+			scan.nextLine();// 버퍼비우기,큐비우기
+			S_VO s_vo = new S_VO();
+			System.out.print("성함을 써주세요 :");
+			s_vo.setName(scan.nextLine());
+			System.out.print("주민번호13자리를 써주세요 :");
+			s_vo.setYear(scan.nextLine());
+			System.out.print("학년을 써주세요 :");
+			s_vo.setGrade(scan.nextInt());
+			System.out.print("잔액을 설정하세요 :");
+			s_vo.setBalance(scan.nextInt());
+			
+			try {
+				
+				sql ="select * from student where year='"+s_vo.getYear()+"'";
+				ps = con.prepareStatement(sql);
+				rs = ps.executeQuery();
+				
+				if(!rs.next())
+				{
+					while(true) {
+						s_vo.setId(idMaker(s_vo.getGrade()));
+						sql = "select * from student where id ='"+s_vo.getId()+"'";
+						if(ps.executeQuery(sql).next())// 컬럼이 있으면 반복문통해 아이디 재설정
+							continue;
+						else//중복아이디 없으므로 탈출
+							break;
+					}
+					sql="insert into student values(?,?,?,?,?)";
+					ps =con.prepareStatement(sql);
+					ps.setString(1, s_vo.getName());
+					ps.setString(2, s_vo.getYear());
+					ps.setString(3, s_vo.getId());
+					ps.setInt(4, s_vo.getGrade());
+					ps.setInt(5, s_vo.getBalance());
+					int result = ps.executeUpdate();
+					if(result==1) {
+						System.out.println("student테이블 저장 성공!");
+					}
+					list.add(s_vo);
+				}
+				else {
+					System.out.println("등록하신 계정이 있습니다. ID찾기를 통해 확인해주세요");
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}finally {
+				try {
+					
+					if(rs!=null) rs.close();
+					if(rs!=null) rs.close();
+					if(rs!=null) rs.close();
+				}catch(Exception e) {e.printStackTrace();}
+			}
+		}
+		
+		return list;
+	}
+	//전체출력
+	
+	//아이디 5자리 생성
+	public String idMaker(int grade) {
+		String id;
+		id = Integer.toString(grade) +Integer.toString((int)(Math.random()*10000)) ;
+		System.out.println(id);
+		return id;
+	}
+	//상태 보여주기, 테이블 보여주기
+	public void getStudentTable() {
+		try {
+			sql="select * from student";
+			ps = con.prepareStatement(sql);
+			rs=ps.executeQuery();
+			System.out.println("name\tid\tyear\t\tgrade\tbalance");
+			while(rs.next()) {
+				System.out.println(
+				rs.getString("name")+"\t"+
+				rs.getString("id")+"\t"+
+				rs.getString("year")+"\t"+
+				rs.getInt("grade")+"\t"+
+				rs.getInt("balance")
+						);
+				
+			}
+		}catch(Exception e) {e.printStackTrace();}
+		finally {
+			try {		
+				if(rs!=null) rs.close();
+				if(rs!=null) rs.close();
+				if(rs!=null) rs.close();
+			}catch(Exception e) {e.printStackTrace();}
+		}
+		
+	}
+	//Id찾기
+	public void getStudentId() {
+		try {
+			Scanner scan = new Scanner(System.in);
+			System.out.print("주민번호를 입력하세요(13자리): ");
+			String input = scan.nextLine();
+			sql="select * from student where year=?";
+			ps=con.prepareStatement(sql);
+			ps.setString(1, input);
+			rs = ps.executeQuery();
+			if(!rs.next()) {//찾는 id가 없을 때
+				System.out.println("등록되지 않은 주민번호입니다. 새로 등록하세요");
+			}else {
+				System.out.println(rs.getString("id"));
+			}
+		}catch(Exception e) {e.printStackTrace();}
+		finally {
+			try {		
+				if(rs!=null) rs.close();
+				if(rs!=null) rs.close();
+				if(rs!=null) rs.close();
+			}catch(Exception e) {e.printStackTrace();}
+		}
+	}
+	//과목 등록
+	public void enrollCourse() {
+		try {
+			Scanner scan = new Scanner(System.in);
+			String course="";
+			System.out.print("아이디를 입력하세요 :");
+			String id = scan.nextLine();
+			
+			sql="select * from student where id= ?";
+			ps = con.prepareStatement(sql);
+			ps.setString(1, id);
+			rs = ps.executeQuery();
+			
+			if(!rs.next()) {//일치하는 아이디가 없을 때
+				System.out.println("입력하신 id가 없습니다. id를 확인해보세요 ");
+			}else {
+				
+					
+					System.out.print("등록하실 코스를 골라주세요 :");
+					int input =Integer.parseInt(scan.nextLine());
+			
+					
+					switch(input) {
+					case 1:course ="History 101";break;
+					case 2:course="Mathematics 101";break;
+					case 3:course="English 101";break;
+					case 4:course="Chemistry 101";break;
+					case 5:course="Computer Science 101";break;
+					}
+					
+					//id와 과목으로 튜플 검색
+					sql="select * from course where s_id=? and course_name=?";
+					ps = con.prepareStatement(sql);
+					ps.setString(1, id);
+					ps.setString(2, course);
+					ResultSet rsStudent = ps.executeQuery();
+				
+					System.out.println(rsStudent.getRow());
+					System.out.println("if문 들어가기 전 문장");
+					//튜플이 있으므로 과목이 이미 등록되어있음
+					if(rsStudent.next()) {
+						System.out.println(course+"는 이미 등록하신 과목입니다.");
+					}else {
+					
+						//튜플이 없으므로 등록 가능함.
+						//가격 검색
+						sql="select * from course_pirce where c_name=?";
+						ps =con.prepareStatement(sql);
+						ps.setString(1,course);
+						ResultSet rsCourse_Price = ps.executeQuery();
+						System.out.println(rsCourse_Price.getRow());
+						System.out.println("가격은 "+rsCourse_Price.getInt("c_price")+"입니다.");
+						System.out.print("지불하시겠습니까? (y/n) ");
+						String pay =scan.nextLine();
+						
+						//잔액이 있는지 없는지 조사
+						if(pay.equals("n")||pay.equals("n")) {
+							System.out.println("등록이 취소됐습니다.");
+							
+						}else if(pay.equals("y")||pay.equals("Y")){
+							if(rsStudent.getInt("balance")<rsCourse_Price.getInt("c_price")) {
+								System.out.println("잔액이 부족하여 등록이 취소됐습니다.");
+							}else {
+								sql="insert into course(s_id,course_name) values(?,?)";
+								ps = con.prepareStatement(sql);
+								ps.setString(1, rsStudent.getNString("id"));
+								ps.setString(2, rsCourse_Price.getString("c_name"));
+								int result =ps.executeUpdate();
+								if(result ==1) {
+									System.out.println("성공적으로 등록됐습니다.");
+								}
+								
+							}
+						}else {
+							System.out.println("잘못된 값을 입력하셨습니다.");
+							System.out.println("다시 시작해주세요");
+						}
+						if(rsCourse_Price!=null) rsCourse_Price.close();
+					
+					if(rsStudent !=null) rsStudent.close();
+				}
+			}
+			
+		}catch(Exception e) {e.printStackTrace();}
+		finally {
+			try {		
+				if(rs!=null) rs.close();
+				if(rs!=null) rs.close();
+				if(rs!=null) rs.close();
+				
+			}catch(Exception e) {e.printStackTrace();}
+		}
+		
+	}
+}

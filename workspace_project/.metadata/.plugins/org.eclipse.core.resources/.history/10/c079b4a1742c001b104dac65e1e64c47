@@ -1,0 +1,12 @@
+package com.student.Function;
+
+import java.util.Scanner;
+
+public class S_Enrollment {
+	public S_Enrollment() {
+		System.out.println("몇 명을 등록하겠습니까?");
+		Scanner scan = new Scanner(System.in);
+		int s_number = scan.nextInt();
+		
+	}
+}

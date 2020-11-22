@@ -1,0 +1,56 @@
+package com.student.main;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+import com.student.DTOImple.DTOImple;
+import com.student.VO.S_VO;
+
+public class Execute {
+
+	public static void main(String[] args) {
+		
+		
+		
+		while(true) {
+			Scanner scan = new Scanner(System.in);
+			System.out.println("메뉴를 선택해주세요 ");
+			System.out.println("1.학생등록");
+			System.out.println("2.코스틍록");
+			System.out.println("3.상태확인");
+			System.out.println("4.ID찾기");
+			System.out.println("5.종료");
+			int input = Integer.parseInt(scan.nextLine());
+			switch(input) {
+			case 1:
+				DTOImple student = new DTOImple();
+				List<S_VO> list = new ArrayList();
+				list = student.enrollStudent();
+				System.out.println("이름\tID\t학년\t잔액");
+				for(int i=0;i<list.size();i++) {
+					System.out.println(
+							list.get(i).getName()+"\t"
+							+list.get(i).getId()+"\t"
+							+list.get(i).getGrade()+"\t"
+							+list.get(i).getBalance());
+				}
+				break;
+			case 2:
+				break;
+			case 3:
+				break;
+			case 4:
+				break;
+			case 5:
+				System.exit(0);
+				default :
+					System.out.println("1~4사이 숫자만 입력하세요");
+					break;
+			}
+		}
+		
+
+	}
+
+}

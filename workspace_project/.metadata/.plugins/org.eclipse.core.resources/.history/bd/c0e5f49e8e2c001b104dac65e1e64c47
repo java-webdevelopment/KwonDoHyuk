@@ -1,0 +1,12 @@
+create table student(
+name varchar2(30) not null,
+year varchar2(30),
+id varchar2(30) ,
+grade int,
+balance int
+);
+
+insert into student(name,year,grade,balance) 
+values('kim','19940122',1,100);
+select * from student
+drop table student;
